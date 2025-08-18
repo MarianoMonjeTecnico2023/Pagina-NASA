@@ -67,7 +67,7 @@ cd Frontend-NASA
 ### 2. Configurar el Backend
 Asegúrate de que el backend esté funcionando en:
 - **Desarrollo:** `http://localhost:3000`
-- **Producción:** `https://tu-backend.onrender.com`
+- **Producción:** `https://server-nasa.onrender.com`
 
 ### 3. Abrir la Aplicación
 ```bash
