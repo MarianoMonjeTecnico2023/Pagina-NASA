@@ -96,23 +96,74 @@
             <!-- Earth Section -->
             <section id="earth" class="card">
                 <div class="card-header">
-                    <i class="fas fa-images card-icon"></i>
-                    <h2 class="card-title">Biblioteca de Imágenes y Videos</h2>
+                    <i class="fas fa-search card-icon"></i>
+                    <h2 class="card-title">Buscador de Contenido NASA</h2>
                 </div>
-                <p class="card-description">Explora la colección de imágenes y videos de la NASA Image and Video Library.</p>
-                <button class="btn" onclick="loadNASAImages()">
-                    <i class="fas fa-search"></i>
-                    Explorar Biblioteca
-                </button>
+                <p class="card-description">Busca cualquier tema espacial: Luna, Marte, galaxias, astronautas, etc. El sistema detectará automáticamente videos e imágenes disponibles.</p>
+                
+                <!-- Search Bar -->
+                <div style="margin: 1.5rem 0;">
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <input 
+                            type="text" 
+                            id="nasa-search-input" 
+                            placeholder="Ej: Luna, Marte, galaxias, astronautas..." 
+                            style="
+                                flex: 1;
+                                min-width: 250px;
+                                padding: 0.75rem 1rem;
+                                border: 2px solid rgba(0, 212, 255, 0.3);
+                                border-radius: 12px;
+                                background: rgba(255, 255, 255, 0.05);
+                                color: var(--text-primary);
+                                font-size: 1rem;
+                                outline: none;
+                                transition: all 0.3s ease;
+                            "
+                            onkeypress="if(event.key === 'Enter') performNASASearch()"
+                        >
+                        <button class="btn" onclick="performNASASearch()">
+                            <i class="fas fa-search"></i>
+                            Buscar
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Search Suggestions -->
+                    <div style="margin-top: 1rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                            <i class="fas fa-lightbulb"></i> Sugerencias rápidas:
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;" onclick="quickSearch('Luna')">
+                                <i class="fas fa-moon"></i> Luna
+                            </button>
+                            <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;" onclick="quickSearch('Marte')">
+                                <i class="fas fa-mars"></i> Marte
+                            </button>
+                            <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;" onclick="quickSearch('galaxia')">
+                                <i class="fas fa-star"></i> Galaxia
+                            </button>
+                            <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;" onclick="quickSearch('astronauta')">
+                                <i class="fas fa-user-astronaut"></i> Astronauta
+                            </button>
+                            <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;" onclick="quickSearch('satélite')">
+                                <i class="fas fa-satellite"></i> Satélite
+                            </button>
+                            <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;" onclick="quickSearch('telescopio')">
+                                <i class="fas fa-telescope"></i> Telescopio
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Loading -->
-                <div id="earth-loading" class="loading">
+                <div id="nasa-images-loading" class="loading">
                     <div class="spinner"></div>
                     <p>Buscando en la biblioteca de la NASA...</p>
                 </div>
                 
                 <!-- Results -->
-                <div id="earth-results" class="results"></div>
+                <div id="nasa-images-results" class="results"></div>
             </section>
 
             <!-- Mars Section -->

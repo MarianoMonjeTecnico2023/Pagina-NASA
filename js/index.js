@@ -259,296 +259,349 @@ function displayAsteroidsResults(data) {
 // ===== FUNCIONES NASA IMAGES =====
 
 /**
- * Carga imágenes y videos de la NASA Image and Video Library
+ * Realiza una búsqueda personalizada en la NASA Image and Video Library
  */
-async function loadNASAImages() {
-    showLoading('earth-loading');
-    hideResults('earth-results');
-
-    // Mostrar selector de categorías
-    const container = document.getElementById('earth-results');
-    container.innerHTML = `
-        <div class="result-item">
-            <h3 class="result-title">Biblioteca de Imágenes y Videos de la NASA</h3>
-            <p class="result-explanation">Selecciona una categoría para explorar imágenes y videos espaciales:</p>
-            
-            <div class="famous-places-grid">
-                <button class="place-btn" onclick="loadNASAImagesByCategory('space')">
-                    <i class="fas fa-rocket"></i>
-                    <span>Exploración Espacial</span>
-                    <small>Naves y misiones</small>
-                </button>
-                
-                <button class="place-btn" onclick="loadNASAImagesByCategory('earth')">
-                    <i class="fas fa-globe-americas"></i>
-                    <span>Planeta Tierra</span>
-                    <small>Vistas desde el espacio</small>
-                </button>
-                
-                <button class="place-btn" onclick="loadNASAImagesByCategory('mars')">
-                    <i class="fas fa-mars"></i>
-                    <span>Planeta Marte</span>
-                    <small>Exploración marciana</small>
-                </button>
-                
-                <button class="place-btn" onclick="loadNASAImagesByCategory('galaxy')">
-                    <i class="fas fa-galaxy"></i>
-                    <span>Galaxias</span>
-                    <small>Universo profundo</small>
-                </button>
-                
-                <button class="place-btn" onclick="loadNASAImagesByCategory('nebula')">
-                    <i class="fas fa-star"></i>
-                    <span>Nebulosas</span>
-                    <small>Nubes cósmicas</small>
-                </button>
-                
-                <button class="place-btn" onclick="loadNASAImagesByCategory('astronaut')">
-                    <i class="fas fa-user-astronaut"></i>
-                    <span>Astronautas</span>
-                    <small>Misiones tripuladas</small>
-                </button>
-                
-                <button class="place-btn" onclick="loadNASAImagesByCategory('satellite')">
-                    <i class="fas fa-satellite"></i>
-                    <span>Satélites</span>
-                    <small>Tecnología espacial</small>
-                </button>
-                
-                <button class="place-btn" onclick="loadNASAImagesByCategory('telescope')">
-                    <i class="fas fa-telescope"></i>
-                    <span>Telescopios</span>
-                    <small>Observación astronómica</small>
-                </button>
-            </div>
-        </div>
-    `;
+async function performNASASearch() {
+    const searchInput = document.getElementById('nasa-search-input');
+    const query = searchInput.value.trim();
     
-    showResults('earth-results');
-    hideLoading('earth-loading');
-}
-
-/**
- * Carga imágenes por categoría específica
- * @param {string} category - Categoría de búsqueda
- */
-async function loadNASAImagesByCategory(category) {
-    showLoading('earth-loading');
-    hideResults('earth-results');
-
+    if (!query) {
+        alert('Por favor, ingresa un término de búsqueda');
+        return;
+    }
+    
+    showLoading('nasa-images-loading');
+    hideResults('nasa-images-results');
+    
     try {
-        const data = await makeRequest('/images', {
-            q: category,
-            limit: 12
-        });
-        
-        displayNASAImagesResults(data.data, category);
-        showResults('earth-results');
+        const data = await makeRequest('/images', { q: query, limit: 15 });
+        displayNASAImagesResults(data.data, query);
+        showResults('nasa-images-results');
     } catch (error) {
-        displayError('earth-results', error.message);
+        displayError('nasa-images-results', error.message);
     } finally {
-        hideLoading('earth-loading');
+        hideLoading('nasa-images-loading');
     }
 }
 
 /**
- * Muestra los resultados de imágenes de la NASA
- * @param {Object} data - Datos de la respuesta
- * @param {string} category - Categoría buscada
+ * Búsqueda rápida desde los botones de sugerencias
+ * @param {string} term - Término de búsqueda
  */
-function displayNASAImagesResults(data, category) {
-    const container = document.getElementById('earth-results');
+function quickSearch(term) {
+    const searchInput = document.getElementById('nasa-search-input');
+    searchInput.value = term;
+    performNASASearch();
+}
+
+/**
+ * Muestra los resultados de búsqueda de la NASA Image and Video Library
+ * @param {Object} data - Datos de la búsqueda
+ * @param {string} query - Término buscado
+ */
+function displayNASAImagesResults(data, query) {
+    const container = document.getElementById('nasa-images-results');
     
-    if (!data || !data.collection || !data.collection.items || data.collection.items.length === 0) {
+    if (!data || !data.collection || !data.collection.items) {
         container.innerHTML = `
             <div class="result-item">
-                <h3 class="result-title">Biblioteca de Imágenes de la NASA</h3>
+                <h3 class="result-title">Resultados de búsqueda: "${query}"</h3>
                 <div class="error">
-                    ❌ No se encontraron imágenes para la categoría "${category}"
+                    ❌ No se encontraron resultados para "${query}"
                 </div>
-                <p class="result-explanation">Intenta con otra categoría o verifica la conexión.</p>
-                <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
-                    <i class="fas fa-arrow-left"></i> Volver a categorías
+                <p class="result-explanation">Intenta con otros términos como: Luna, Marte, galaxia, astronauta, satélite, etc.</p>
+                <button class="btn btn-secondary btn-back" onclick="clearSearch()">
+                    <i class="fas fa-arrow-left"></i> Nueva búsqueda
                 </button>
             </div>
         `;
         return;
     }
-
-    const items = data.collection.items;
-    const totalHits = data.collection.metadata?.total_hits || 0;
     
-    container.innerHTML = `
+    const items = data.collection.items;
+    
+    // Contar tipos de media
+    const mediaTypes = items.reduce((acc, item) => {
+        const mediaType = item.data?.[0]?.media_type || 'unknown';
+        acc[mediaType] = (acc[mediaType] || 0) + 1;
+        return acc;
+    }, {});
+    
+    // Priorizar videos en la búsqueda
+    const sortedItems = items.sort((a, b) => {
+        const aType = a.data?.[0]?.media_type || 'image';
+        const bType = b.data?.[0]?.media_type || 'image';
+        
+        // Videos primero, luego imágenes, luego audio
+        const priority = { video: 3, image: 2, audio: 1 };
+        return (priority[bType] || 0) - (priority[aType] || 0);
+    });
+    
+    let content = `
         <div class="result-item">
-            <h3 class="result-title">Imágenes de ${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
-            <p class="result-explanation">Se encontraron ${totalHits} resultados. Mostrando ${items.length} imágenes:</p>
+            <h3 class="result-title">Resultados para: "${query}"</h3>
+            <p class="result-explanation">Se encontraron ${items.length} resultados</p>
             
-            <div class="gallery">
-                ${items.map(item => {
-                    const nasaId = item.data?.[0]?.nasa_id;
-                    const title = item.data?.[0]?.title || 'Sin título';
-                    const description = item.data?.[0]?.description || 'Sin descripción';
-                    const dateCreated = item.data?.[0]?.date_created || 'Fecha no disponible';
-                    const mediaType = item.data?.[0]?.media_type || 'image';
-                    
-                    // Obtener la URL de la imagen (usar el primer enlace disponible)
-                    const links = item.links || [];
-                    const imageLink = links.find(link => link.render === 'image') || links[0];
-                    const imageUrl = imageLink?.href || '';
-                    
-                    return `
-                        <div class="gallery-item">
-                            ${imageUrl ? `<img src="${imageUrl}" alt="${title}" class="gallery-image" onerror="this.style.display='none'">` : ''}
-                            <div class="gallery-content">
-                                <h4 class="gallery-title">${title}</h4>
-                                <div class="gallery-date">${dateCreated}</div>
-                                <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem;">
-                                    ${mediaType === 'video' ? '🎥 Video' : '🖼️ Imagen'}
-                                </div>
-                                ${nasaId ? `<button class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="loadNASAAssetDetails('${nasaId}')">
-                                    <i class="fas fa-info-circle"></i> Ver detalles
-                                </button>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
+            <div style="margin: 1rem 0; display: flex; gap: 1rem; flex-wrap: wrap;">
+                ${mediaTypes.video ? `
+                    <span style="background: rgba(255, 107, 107, 0.1); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">
+                        <i class="fas fa-video"></i> Videos: ${mediaTypes.video}
+                    </span>
+                ` : ''}
+                ${mediaTypes.image ? `
+                    <span style="background: rgba(0, 212, 255, 0.1); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">
+                        <i class="fas fa-image"></i> Imágenes: ${mediaTypes.image}
+                    </span>
+                ` : ''}
+                ${mediaTypes.audio ? `
+                    <span style="background: rgba(255, 193, 7, 0.1); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">
+                        <i class="fas fa-music"></i> Audio: ${mediaTypes.audio}
+                    </span>
+                ` : ''}
             </div>
             
-            <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
-                <i class="fas fa-arrow-left"></i> Ver otras categorías
+            <button class="btn btn-secondary btn-back" onclick="clearSearch()" style="margin-bottom: 1rem;">
+                <i class="fas fa-arrow-left"></i> Nueva búsqueda
             </button>
+        </div>
+    `;
+    
+    // Mostrar galería de resultados
+    content += '<div class="gallery">';
+    
+    sortedItems.forEach(item => {
+        const metadata = item.data?.[0];
+        const nasaId = metadata?.nasa_id;
+        const title = metadata?.title || 'Sin título';
+        const description = metadata?.description || 'Sin descripción';
+        const dateCreated = metadata?.date_created || 'Fecha no disponible';
+        const mediaType = metadata?.media_type || 'image';
+        
+        // Obtener URL de imagen de vista previa
+        const imageUrl = item.links?.find(link => link.render === 'image')?.href || 
+                        item.links?.find(link => link.rel === 'preview')?.href ||
+                        'https://via.placeholder.com/300x200?text=Sin+imagen';
+        
+        // Determinar icono y color según el tipo de media
+        let mediaIcon, mediaColor, mediaLabel;
+        switch (mediaType) {
+            case 'video':
+                mediaIcon = 'fas fa-video';
+                mediaColor = '#ff6b6b';
+                mediaLabel = 'VIDEO';
+                break;
+            case 'audio':
+                mediaIcon = 'fas fa-music';
+                mediaColor = '#ffc107';
+                mediaLabel = 'AUDIO';
+                break;
+            default:
+                mediaIcon = 'fas fa-image';
+                mediaColor = '#00d4ff';
+                mediaLabel = 'IMAGEN';
+        }
+        
+        content += `
+            <div class="gallery-item" style="position: relative;">
+                <div style="position: absolute; top: 10px; right: 10px; background: ${mediaColor}; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: bold; z-index: 10;">
+                    <i class="${mediaIcon}"></i> ${mediaLabel}
+                </div>
+                ${mediaType === 'video' ? `
+                    <video class="gallery-image" style="object-fit: cover; height: 200px;" muted loop>
+                        <source src="${imageUrl}" type="video/mp4">
+                        <img src="${imageUrl}" alt="${title}" class="gallery-image">
+                    </video>
+                ` : `
+                    <img src="${imageUrl}" alt="${title}" class="gallery-image">
+                `}
+                <div class="gallery-content">
+                    <h4 class="gallery-title">${title}</h4>
+                    <div class="gallery-date">${dateCreated}</div>
+                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; line-height: 1.4;">
+                        ${description.length > 100 ? description.substring(0, 100) + '...' : description}
+                    </p>
+                    <button onclick="loadNASAAssetDetails('${nasaId}')" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8rem; padding: 0.3rem 0.6rem;">
+                        <i class="fas fa-info-circle"></i> Ver detalles
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    content += '</div>';
+    
+    container.innerHTML = content;
+}
+
+/**
+ * Limpia la búsqueda y muestra la interfaz inicial
+ */
+function clearSearch() {
+    const searchInput = document.getElementById('nasa-search-input');
+    const container = document.getElementById('nasa-images-results');
+    
+    searchInput.value = '';
+    container.innerHTML = `
+        <div class="result-item">
+            <h3 class="result-title">Buscador de Contenido NASA</h3>
+            <p class="result-explanation">Escribe cualquier término espacial en la barra de búsqueda para encontrar videos e imágenes de la NASA.</p>
+            
+            <div style="margin: 1rem 0; padding: 1rem; background: rgba(0, 212, 255, 0.1); border-radius: 8px;">
+                <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">
+                    <i class="fas fa-info-circle"></i> Cómo usar el buscador:
+                </h4>
+                <ul style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                    <li>• Escribe términos como "Luna", "Marte", "galaxia", "astronauta"</li>
+                    <li>• El sistema detectará automáticamente videos disponibles</li>
+                    <li>• Los videos aparecen primero en los resultados</li>
+                    <li>• Haz clic en "Ver detalles" para reproducir o descargar</li>
+                </ul>
+            </div>
         </div>
     `;
 }
 
 /**
- * Carga captions de un asset específico de la NASA
- * @param {string} nasaId - ID del asset de la NASA
+ * Carga los detalles completos de un asset de NASA (incluyendo URLs de video)
+ * @param {string} nasaId - ID del asset de NASA
  */
 async function loadNASAAssetDetails(nasaId) {
-    showLoading('earth-loading');
-    
     try {
-        const data = await makeRequest(`/images/captions/${nasaId}`);
+        const data = await makeRequest(`/images/asset/${nasaId}`);
         displayNASAAssetDetails(data.data, nasaId);
     } catch (error) {
-        displayError('earth-results', error.message);
-    } finally {
-        hideLoading('earth-loading');
+        console.error('Error cargando detalles del asset:', error);
+        const container = document.getElementById('nasa-images-results');
+        container.innerHTML += `
+            <div class="error">
+                ❌ Error cargando detalles del asset: ${error.message}
+            </div>
+        `;
     }
 }
 
 /**
- * Muestra los detalles de un asset específico
+ * Muestra los detalles completos de un asset de NASA
  * @param {Object} data - Datos del asset
  * @param {string} nasaId - ID del asset
  */
 function displayNASAAssetDetails(data, nasaId) {
-    const container = document.getElementById('earth-results');
+    const container = document.getElementById('nasa-images-results');
     
-    if (!data || !data.collection) {
-        container.innerHTML = `
-            <div class="result-item">
-                <h3 class="result-title">Detalles del Asset</h3>
-                <div class="error">
-                    ❌ No se pudieron obtener los detalles del asset
-                </div>
-                <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
-                    <i class="fas fa-arrow-left"></i> Volver a categorías
-                </button>
-            </div>
-        `;
-        return;
-    }
-
-    const items = data.collection.items || [];
-    const asset = items[0];
+    // Crear un modal o sección para mostrar los detalles
+    const detailsSection = document.createElement('div');
+    detailsSection.className = 'result-item';
+    detailsSection.style.marginTop = '2rem';
+    detailsSection.style.border = '2px solid var(--accent-color)';
+    detailsSection.style.padding = '1.5rem';
+    detailsSection.style.borderRadius = '12px';
     
-    if (!asset) {
-        container.innerHTML = `
-            <div class="result-item">
-                <h3 class="result-title">Detalles del Asset</h3>
-                <div class="error">
-                    ❌ Asset no encontrado
-                </div>
-                <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
-                    <i class="fas fa-arrow-left"></i> Volver a categorías
-                </button>
-            </div>
-        `;
-        return;
-    }
-
-    const title = asset.data?.[0]?.title || 'Sin título';
-    const description = asset.data?.[0]?.description || 'Sin descripción';
-    const dateCreated = asset.data?.[0]?.date_created || 'Fecha no disponible';
-    const keywords = asset.data?.[0]?.keywords || [];
-    const mediaType = asset.data?.[0]?.media_type || 'image';
-    
-    // Obtener enlaces de diferentes tamaños
-    const links = asset.links || [];
-    const imageLinks = links.filter(link => link.render === 'image');
-    const videoLinks = links.filter(link => link.render === 'video');
-    
-    container.innerHTML = `
-        <div class="result-item">
-            <h3 class="result-title">${title}</h3>
-            <div class="result-date">${dateCreated}</div>
-            <p class="result-explanation">${description}</p>
-            
-            ${imageLinks.length > 0 ? `
-                <div style="margin: 1rem 0;">
-                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Imágenes disponibles:</h4>
-                    <div class="gallery">
-                        ${imageLinks.slice(0, 3).map(link => `
-                            <div class="gallery-item">
-                                <img src="${link.href}" alt="${title}" class="gallery-image">
-                                <div class="gallery-content">
-                                    <div class="gallery-title">${link.rel || 'Imagen'}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            ${videoLinks.length > 0 ? `
-                <div style="margin: 1rem 0;">
-                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Videos disponibles:</h4>
-                    <div class="gallery">
-                        ${videoLinks.slice(0, 2).map(link => `
-                            <div class="gallery-item">
-                                <video controls class="gallery-image">
-                                    <source src="${link.href}" type="video/mp4">
-                                    Tu navegador no soporta videos.
-                                </video>
-                                <div class="gallery-content">
-                                    <div class="gallery-title">${link.rel || 'Video'}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            ${keywords.length > 0 ? `
-                <div style="margin: 1rem 0;">
-                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Palabras clave:</h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        ${keywords.slice(0, 10).map(keyword => `
-                            <span style="background: rgba(0, 212, 255, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
-                                ${keyword}
-                            </span>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
-                <i class="fas fa-arrow-left"></i> Volver a categorías
-            </button>
-        </div>
+    let content = `
+        <h3 class="result-title">Detalles del Asset: ${nasaId}</h3>
+        <button onclick="this.parentElement.parentElement.remove()" class="btn btn-secondary" style="float: right; margin-top: -2rem;">
+            <i class="fas fa-times"></i> Cerrar
+        </button>
     `;
+    
+    // Mostrar información básica si está disponible
+    if (data.collection) {
+        const item = data.collection.items?.[0];
+        if (item) {
+            const metadata = item.data?.[0];
+            if (metadata) {
+                content += `
+                    <div style="margin: 1rem 0;">
+                        <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${metadata.title || 'Sin título'}</h4>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">${metadata.description || 'Sin descripción'}</p>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            Fecha: ${metadata.date_created || 'No disponible'}<br>
+                            Tipo: ${metadata.media_type || 'No disponible'}
+                        </p>
+                    </div>
+                `;
+            }
+        }
+    }
+    
+    // Mostrar enlaces de video/imagen
+    if (data.collection?.items?.[0]?.href) {
+        const href = data.collection.items[0].href;
+        content += `
+            <div style="margin: 1rem 0;">
+                <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Enlaces de Descarga:</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        `;
+        
+        // Agregar enlaces para diferentes formatos
+        const formats = [
+            { name: 'Original', url: href },
+            { name: 'MP4', url: href.replace(/\.\w+$/, '.mp4') },
+            { name: 'MOV', url: href.replace(/\.\w+$/, '.mov') },
+            { name: 'JPG', url: href.replace(/\.\w+$/, '.jpg') },
+            { name: 'PNG', url: href.replace(/\.\w+$/, '.png') }
+        ];
+        
+        formats.forEach(format => {
+            content += `
+                <a href="${format.url}" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">
+                    <i class="fas fa-download"></i> ${format.name}
+                </a>
+            `;
+        });
+        
+        content += `
+                </div>
+            </div>
+        `;
+        
+        // Si es un video, mostrar reproductor
+        const item = data.collection?.items?.[0];
+        const metadata = item?.data?.[0];
+        if (metadata?.media_type === 'video') {
+            content += `
+                <div style="margin: 1rem 0;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Reproductor de Video:</h4>
+                    <video controls style="width: 100%; max-width: 500px; border-radius: 8px;">
+                        <source src="${href}" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                    </video>
+                </div>
+            `;
+        } else if (metadata?.media_type === 'image') {
+            content += `
+                <div style="margin: 1rem 0;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Imagen:</h4>
+                    <img src="${href}" alt="NASA Asset" style="width: 100%; max-width: 500px; border-radius: 8px;">
+                </div>
+            `;
+        }
+    }
+    
+    // Mostrar información adicional si está disponible
+    if (data.collection?.items?.[0]?.links) {
+        const links = data.collection.items[0].links;
+        content += `
+            <div style="margin: 1rem 0;">
+                <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Enlaces Adicionales:</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        `;
+        
+        links.forEach(link => {
+            content += `
+                <a href="${link.href}" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">
+                    <i class="fas fa-external-link-alt"></i> ${link.rel || 'Enlace'}
+                </a>
+            `;
+        });
+        
+        content += `
+                </div>
+            </div>
+        `;
+    }
+    
+    detailsSection.innerHTML = content;
+    container.appendChild(detailsSection);
 }
 
 // ===== FUNCIONES MARTE =====
@@ -880,8 +933,9 @@ function initApp() {
 window.loadAPOD = loadAPOD;
 window.loadMultipleAPOD = loadMultipleAPOD;
 window.loadAsteroids = loadAsteroids;
-window.loadNASAImages = loadNASAImages;
-window.loadNASAImagesByCategory = loadNASAImagesByCategory;
+window.performNASASearch = performNASASearch;
+window.quickSearch = quickSearch;
+window.clearSearch = clearSearch;
 window.loadNASAAssetDetails = loadNASAAssetDetails;
 window.loadMarsWeather = loadMarsWeather;
 window.loadEPICImages = loadEPICImages;
@@ -892,4 +946,39 @@ window.loadAllData = loadAllData;
 window.toggleAPODLanguage = toggleAPODLanguage;
 
 // ===== INICIALIZACIÓN =====
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar estilos CSS para la barra de búsqueda
+    const style = document.createElement('style');
+    style.textContent = `
+        #nasa-search-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        
+        #nasa-search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .search-suggestions {
+            margin-top: 1rem;
+        }
+        
+        .search-suggestions button {
+            transition: all 0.3s ease;
+        }
+        
+        .search-suggestions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .video-priority {
+            border: 2px solid #ff6b6b !important;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Inicializar la aplicación
+    initApp();
+});
