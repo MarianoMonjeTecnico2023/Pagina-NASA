@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 NASA Space Explorer - Explorador Espacial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">
+                <i class="fas fa-rocket floating"></i>
+                <span>NASA Space Explorer</span>
+            </a>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#apod" class="nav-link">APOD</a></li>
+                    <li><a href="#asteroids" class="nav-link">Asteroides</a></li>
+                    <li><a href="#earth" class="nav-link">Tierra</a></li>
+                    <li><a href="#mars" class="nav-link">Marte</a></li>
+                    <li><a href="#gallery" class="nav-link">Galería</a></li>
+                    <li><a href="#stats" class="nav-link">Estadísticas</a></li>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Explora el Universo</h1>
+            <p>Descubre las maravillas del espacio a través de la API de NASA. Imágenes astronómicas, datos de asteroides, clima marciano y mucho más.</p>
+            <button class="btn" onclick="loadAllData()">
+                <i class="fas fa-satellite"></i>
+                Cargar Todo
+            </button>
+        </section>
+
+        <!-- Grid Container -->
+        <div class="grid-container">
+            <!-- APOD Section -->
+            <section id="apod" class="card">
+                <div class="card-header">
+                    <i class="fas fa-image card-icon"></i>
+                    <h2 class="card-title">Imagen del Día</h2>
+                </div>
+                <p class="card-description">Descubre la imagen astronómica del día seleccionada por la NASA.</p>
+                <div class="btn-group">
+                    <button class="btn" onclick="loadAPOD()">
+                        <i class="fas fa-star"></i>
+                        Imagen del Día
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadMultipleAPOD()">
+                        <i class="fas fa-images"></i>
+                        Múltiples Imágenes
+                    </button>
+                </div>
+                
+                <!-- Loading -->
+                <div id="apod-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Cargando imagen astronómica...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="apod-results" class="results"></div>
+            </section>
+
+            <!-- Asteroids Section -->
+            <section id="asteroids" class="card">
+                <div class="card-header">
+                    <i class="fas fa-meteor card-icon"></i>
+                    <h2 class="card-title">Asteroides Cercanos</h2>
+                </div>
+                <p class="card-description">Información sobre asteroides que pasan cerca de la Tierra en los últimos 7 días.</p>
+                <button class="btn" onclick="loadAsteroids()">
+                    <i class="fas fa-search"></i>
+                    Buscar Asteroides
+                </button>
+                
+                <!-- Loading -->
+                <div id="asteroids-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Analizando asteroides cercanos...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="asteroids-results" class="results"></div>
+            </section>
+
+            <!-- Earth Section -->
+            <section id="earth" class="card">
+                <div class="card-header">
+                    <i class="fas fa-globe-americas card-icon"></i>
+                    <h2 class="card-title">Imágenes de la Tierra</h2>
+                </div>
+                <p class="card-description">Vistas satelitales de la Tierra desde el espacio.</p>
+                <button class="btn" onclick="loadEarthImagery()">
+                    <i class="fas fa-satellite-dish"></i>
+                    Ver Tierra
+                </button>
+                
+                <!-- Loading -->
+                <div id="earth-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Obteniendo imagen de la Tierra...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="earth-results" class="results"></div>
+            </section>
+
+            <!-- Mars Section -->
+            <section id="mars" class="card">
+                <div class="card-header">
+                    <i class="fas fa-mars card-icon"></i>
+                    <h2 class="card-title">Clima en Marte</h2>
+                </div>
+                <p class="card-description">Datos meteorológicos actuales del planeta rojo desde el rover InSight.</p>
+                <button class="btn" onclick="loadMarsWeather()">
+                    <i class="fas fa-thermometer-half"></i>
+                    Clima Marciano
+                </button>
+                
+                <!-- Loading -->
+                <div id="mars-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Consultando clima marciano...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="mars-results" class="results"></div>
+            </section>
+
+            <!-- EPIC Section -->
+            <section id="epic" class="card">
+                <div class="card-header">
+                    <i class="fas fa-satellite card-icon"></i>
+                    <h2 class="card-title">Imágenes EPIC</h2>
+                </div>
+                <p class="card-description">Imágenes de la Tierra desde el satélite DSCOVR EPIC.</p>
+                <button class="btn" onclick="loadEPICImages()">
+                    <i class="fas fa-camera"></i>
+                    Ver EPIC
+                </button>
+                
+                <!-- Loading -->
+                <div id="epic-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Obteniendo imágenes EPIC...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="epic-results" class="results"></div>
+            </section>
+
+            <!-- Rover Section -->
+            <section id="rover" class="card">
+                <div class="card-header">
+                    <i class="fas fa-robot card-icon"></i>
+                    <h2 class="card-title">Rovers de Marte</h2>
+                </div>
+                <p class="card-description">Fotografías tomadas por los rovers exploradores en Marte.</p>
+                <button class="btn" onclick="loadRoverPhotos()">
+                    <i class="fas fa-camera-retro"></i>
+                    Fotos de Rover
+                </button>
+                
+                <!-- Loading -->
+                <div id="rover-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Descargando fotos del rover...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="rover-results" class="results"></div>
+            </section>
+        </div>
+
+        <!-- Gallery Section -->
+        <section id="gallery" class="card">
+            <div class="card-header">
+                <i class="fas fa-images card-icon"></i>
+                <h2 class="card-title">Galería Espacial</h2>
+            </div>
+            <p class="card-description">Una colección de las mejores imágenes astronómicas de la NASA.</p>
+            <button class="btn" onclick="loadGallery()">
+                <i class="fas fa-th-large"></i>
+                Cargar Galería
+            </button>
+            
+            <!-- Loading -->
+            <div id="gallery-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Preparando galería espacial...</p>
+            </div>
+            
+            <!-- Results -->
+            <div id="gallery-results" class="results"></div>
+        </section>
+
+        <!-- Stats Section -->
+        <section id="stats" class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar card-icon"></i>
+                <h2 class="card-title">Estadísticas del Sistema</h2>
+            </div>
+            <p class="card-description">Información sobre el rendimiento del cache y las consultas realizadas.</p>
+            <button class="btn" onclick="loadStats()">
+                <i class="fas fa-analytics"></i>
+                Ver Estadísticas
+            </button>
+            
+            <!-- Loading -->
+            <div id="stats-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Calculando estadísticas...</p>
+            </div>
+            
+            <!-- Results -->
+            <div id="stats-results" class="results"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 2rem; color: var(--text-secondary); border-top: 1px solid rgba(0, 212, 255, 0.2);">
+        <p>&copy; 2024 NASA Space Explorer. Desarrollado con ❤️ para explorar el universo.</p>
+        <p>Datos proporcionados por la <a href="https://api.nasa.gov" target="_blank" style="color: var(--accent-color);">API de NASA</a></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/index.js"></script>
+</body>
+</html>
