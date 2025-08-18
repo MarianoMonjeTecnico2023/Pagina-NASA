@@ -4,7 +4,7 @@
  */
 
 // ===== CONFIGURACIÓN =====
-const API_BASE = 'http://localhost:3000/api/nasa';
+const API_BASE_URL = 'https://server-nasa.onrender.com/api/nasa';
 
 // ===== FUNCIONES UTILITARIAS =====
 
