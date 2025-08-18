@@ -493,3 +493,117 @@ body {
         font-size: 0.8rem;
     }
 }
+/* ===== GRID DE LUGARES FAMOSOS ===== */
+.famous-places-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* ===== BOTONES DE LUGARES ===== */
+.place-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 212, 255, 0.05));
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.place-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+}
+
+/* ===== ICONOS DE LUGARES ===== */
+.place-btn i {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+/* ===== TEXTO DE LUGARES ===== */
+.place-btn span {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.place-btn small {
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* ===== MENSAJE INFORMATIVO ===== */
+.info-message {
+    background: rgba(0, 212, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.info-message h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--accent-color);
+}
+
+.info-message p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ===== BOTÓN VOLVER ===== */
+.btn-back {
+    margin-top: 1rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .famous-places-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .place-btn {
+        padding: 0.75rem;
+    }
+    
+    .place-btn i {
+        font-size: 1.5rem;
+    }
+    
+    .place-btn span {
+        font-size: 0.9rem;
+    }
+    
+    .place-btn small {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .famous-places-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .place-btn {
+        padding: 0.5rem;
+    }
+    
+    .place-btn i {
+        font-size: 1.25rem;
+    }
+    
+    .place-btn span {
+        font-size: 0.8rem;
+    }
+    
+    .place-btn small {
+        font-size: 0.7rem;
+    }
+}

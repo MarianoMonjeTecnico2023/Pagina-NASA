@@ -265,10 +265,84 @@ async function loadEarthImagery() {
     showLoading('earth-loading');
     hideResults('earth-results');
 
+    // Mostrar selector de lugares famosos
+    const container = document.getElementById('earth-results');
+    container.innerHTML = `
+        <div class="result-item">
+            <h3 class="result-title">Imágenes de la Tierra</h3>
+            <p class="result-explanation">Selecciona un lugar famoso para ver una imagen satelital:</p>
+            
+            <div class="famous-places-grid">
+                <button class="place-btn" onclick="loadEarthImage(29.9792, 31.1342, 'Pirámides de Giza', 'Egipto')">
+                    <i class="fas fa-landmark"></i>
+                    <span>Pirámides de Giza</span>
+                    <small>Egipto</small>
+                </button>
+                
+                <button class="place-btn" onclick="loadEarthImage(40.7589, -73.9851, 'Centro Rockefeller', 'Nueva York')">
+                    <i class="fas fa-building"></i>
+                    <span>Centro Rockefeller</span>
+                    <small>Nueva York</small>
+                </button>
+                
+                <button class="place-btn" onclick="loadEarthImage(40.4319, 116.5704, 'Gran Muralla China', 'China')">
+                    <i class="fas fa-mountain"></i>
+                    <span>Gran Muralla China</span>
+                    <small>China</small>
+                </button>
+                
+                <button class="place-btn" onclick="loadEarthImage(36.1069, -112.1129, 'Gran Cañón', 'Arizona')">
+                    <i class="fas fa-mountain"></i>
+                    <span>Gran Cañón</span>
+                    <small>Arizona, USA</small>
+                </button>
+                
+                <button class="place-btn" onclick="loadEarthImage(25.1972, 55.2744, 'Burj Khalifa', 'Dubai')">
+                    <i class="fas fa-building"></i>
+                    <span>Burj Khalifa</span>
+                    <small>Dubai</small>
+                </button>
+                
+                <button class="place-btn" onclick="loadEarthImage(-22.9519, -43.2105, 'Cristo Redentor', 'Río de Janeiro')">
+                    <i class="fas fa-cross"></i>
+                    <span>Cristo Redentor</span>
+                    <small>Río de Janeiro</small>
+                </button>
+                
+                <button class="place-btn" onclick="loadEarthImage(48.8584, 2.2945, 'Torre Eiffel', 'París')">
+                    <i class="fas fa-tower-observation"></i>
+                    <span>Torre Eiffel</span>
+                    <small>París</small>
+                </button>
+                
+                <button class="place-btn" onclick="loadEarthImage(27.1751, 78.0421, 'Taj Mahal', 'India')">
+                    <i class="fas fa-mosque"></i>
+                    <span>Taj Mahal</span>
+                    <small>India</small>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    showResults('earth-results');
+    hideLoading('earth-loading');
+}
+
+/**
+ * Carga una imagen específica de la Tierra
+ * @param {number} lat - Latitud
+ * @param {number} lon - Longitud
+ * @param {string} placeName - Nombre del lugar
+ * @param {string} country - País
+ */
+async function loadEarthImage(lat, lon, placeName, country) {
+    showLoading('earth-loading');
+    hideResults('earth-results');
+
     try {
         const data = await makeRequest('/earth', {
-            lat: 40.7128,
-            lon: -74.0060
+            lat: lat,
+            lon: lon
         });
         
         // Verificar si hay error en la respuesta del backend
@@ -277,7 +351,7 @@ async function loadEarthImagery() {
             return;
         }
         
-        displayEarthResults(data);
+        displayEarthResults(data, placeName, country);
         showResults('earth-results');
     } catch (error) {
         displayError('earth-results', error.message);
@@ -289,19 +363,24 @@ async function loadEarthImagery() {
 /**
  * Muestra los resultados de imágenes de la Tierra
  * @param {Object} data - Datos de la imagen
+ * @param {string} placeName - Nombre del lugar
+ * @param {string} country - País
  */
-function displayEarthResults(data) {
+function displayEarthResults(data, placeName, country) {
     const container = document.getElementById('earth-results');
     
     // Verificar si data es válido
     if (!data || !data.data) {
         container.innerHTML = `
             <div class="result-item">
-                <h3 class="result-title">Imagen de la Tierra</h3>
+                <h3 class="result-title">Imagen de ${placeName}</h3>
                 <div class="error">
                     ❌ No se pudieron obtener datos de la imagen de la Tierra
                 </div>
                 <p class="result-explanation">La API de imágenes de la Tierra puede estar temporalmente no disponible.</p>
+                <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
+                    <i class="fas fa-arrow-left"></i> Volver a lugares
+                </button>
             </div>
         `;
         return;
@@ -313,15 +392,18 @@ function displayEarthResults(data) {
     if (earthData.error) {
         container.innerHTML = `
             <div class="result-item">
-                <h3 class="result-title">Imagen de la Tierra</h3>
+                <h3 class="result-title">Imagen de ${placeName}</h3>
                 <div class="error">
                     ❌ ${earthData.error}: ${earthData.message || 'Error desconocido'}
                 </div>
                 ${earthData.suggestion ? `<p class="result-explanation">${earthData.suggestion}</p>` : ''}
-                <div style="background: rgba(0, 212, 255, 0.1); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--accent-color);">💡 Información:</h4>
-                    <p style="margin: 0; font-size: 0.9rem;">La API de imágenes de la Tierra de NASA está experimentando problemas técnicos. Esto es temporal y se resolverá pronto.</p>
+                <div class="info-message">
+                    <h4>💡 Información:</h4>
+                    <p>La API de imágenes de la Tierra de NASA está experimentando problemas técnicos. Esto es temporal y se resolverá pronto.</p>
                 </div>
+                <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
+                    <i class="fas fa-arrow-left"></i> Volver a lugares
+                </button>
             </div>
         `;
         return;
@@ -331,11 +413,14 @@ function displayEarthResults(data) {
     if (!earthData.url) {
         container.innerHTML = `
             <div class="result-item">
-                <h3 class="result-title">Imagen de la Tierra</h3>
+                <h3 class="result-title">Imagen de ${placeName}</h3>
                 <div class="error">
                     ❌ No se encontró imagen para las coordenadas especificadas
                 </div>
                 <p class="result-explanation">Intenta con otras coordenadas o fecha.</p>
+                <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
+                    <i class="fas fa-arrow-left"></i> Volver a lugares
+                </button>
             </div>
         `;
         return;
@@ -343,13 +428,16 @@ function displayEarthResults(data) {
     
     container.innerHTML = `
         <div class="result-item">
-            <h3 class="result-title">Imagen de la Tierra</h3>
-            <p class="result-explanation">Imagen satelital de Nueva York (40.7128, -74.0060)</p>
-            <img src="${earthData.url}" alt="Earth from Space" class="result-image">
+            <h3 class="result-title">Imagen de ${placeName}</h3>
+            <p class="result-explanation">Imagen satelital de ${placeName}, ${country}</p>
+            <img src="${earthData.url}" alt="${placeName} from Space" class="result-image">
             <p style="color: var(--text-muted); font-size: 0.9rem;">
                 Fecha: ${earthData.date || 'No disponible'}
-                ${earthData.coordinates ? `<br>Coordenadas: ${earthData.coordinates.lat}, ${earthData.coordinates.lon}` : ''}
+                <br>Coordenadas: ${lat}, ${lon}
             </p>
+            <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
+                <i class="fas fa-arrow-left"></i> Ver otros lugares
+            </button>
         </div>
     `;
 }
@@ -704,6 +792,7 @@ window.loadAPOD = loadAPOD;
 window.loadMultipleAPOD = loadMultipleAPOD;
 window.loadAsteroids = loadAsteroids;
 window.loadEarthImagery = loadEarthImagery;
+window.loadEarthImage = loadEarthImage;
 window.loadMarsWeather = loadMarsWeather;
 window.loadEPICImages = loadEPICImages;
 window.loadRoverPhotos = loadRoverPhotos;
