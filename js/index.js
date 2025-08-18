@@ -256,69 +256,69 @@ function displayAsteroidsResults(data) {
     `;
 }
 
-// ===== FUNCIONES TIERRA =====
+// ===== FUNCIONES NASA IMAGES =====
 
 /**
- * Carga imágenes de la Tierra
+ * Carga imágenes y videos de la NASA Image and Video Library
  */
-async function loadEarthImagery() {
+async function loadNASAImages() {
     showLoading('earth-loading');
     hideResults('earth-results');
 
-    // Mostrar selector de lugares famosos
+    // Mostrar selector de categorías
     const container = document.getElementById('earth-results');
     container.innerHTML = `
         <div class="result-item">
-            <h3 class="result-title">Imágenes de la Tierra</h3>
-            <p class="result-explanation">Selecciona un lugar famoso para ver una imagen satelital:</p>
+            <h3 class="result-title">Biblioteca de Imágenes y Videos de la NASA</h3>
+            <p class="result-explanation">Selecciona una categoría para explorar imágenes y videos espaciales:</p>
             
             <div class="famous-places-grid">
-                <button class="place-btn" onclick="loadEarthImage(29.9792, 31.1342, 'Pirámides de Giza', 'Egipto')">
-                    <i class="fas fa-landmark"></i>
-                    <span>Pirámides de Giza</span>
-                    <small>Egipto</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('space')">
+                    <i class="fas fa-rocket"></i>
+                    <span>Exploración Espacial</span>
+                    <small>Naves y misiones</small>
                 </button>
                 
-                <button class="place-btn" onclick="loadEarthImage(40.7589, -73.9851, 'Centro Rockefeller', 'Nueva York')">
-                    <i class="fas fa-building"></i>
-                    <span>Centro Rockefeller</span>
-                    <small>Nueva York</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('earth')">
+                    <i class="fas fa-globe-americas"></i>
+                    <span>Planeta Tierra</span>
+                    <small>Vistas desde el espacio</small>
                 </button>
                 
-                <button class="place-btn" onclick="loadEarthImage(40.4319, 116.5704, 'Gran Muralla China', 'China')">
-                    <i class="fas fa-mountain"></i>
-                    <span>Gran Muralla China</span>
-                    <small>China</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('mars')">
+                    <i class="fas fa-mars"></i>
+                    <span>Planeta Marte</span>
+                    <small>Exploración marciana</small>
                 </button>
                 
-                <button class="place-btn" onclick="loadEarthImage(36.1069, -112.1129, 'Gran Cañón', 'Arizona')">
-                    <i class="fas fa-mountain"></i>
-                    <span>Gran Cañón</span>
-                    <small>Arizona, USA</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('galaxy')">
+                    <i class="fas fa-galaxy"></i>
+                    <span>Galaxias</span>
+                    <small>Universo profundo</small>
                 </button>
                 
-                <button class="place-btn" onclick="loadEarthImage(25.1972, 55.2744, 'Burj Khalifa', 'Dubai')">
-                    <i class="fas fa-building"></i>
-                    <span>Burj Khalifa</span>
-                    <small>Dubai</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('nebula')">
+                    <i class="fas fa-star"></i>
+                    <span>Nebulosas</span>
+                    <small>Nubes cósmicas</small>
                 </button>
                 
-                <button class="place-btn" onclick="loadEarthImage(-22.9519, -43.2105, 'Cristo Redentor', 'Río de Janeiro')">
-                    <i class="fas fa-cross"></i>
-                    <span>Cristo Redentor</span>
-                    <small>Río de Janeiro</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('astronaut')">
+                    <i class="fas fa-user-astronaut"></i>
+                    <span>Astronautas</span>
+                    <small>Misiones tripuladas</small>
                 </button>
                 
-                <button class="place-btn" onclick="loadEarthImage(48.8584, 2.2945, 'Torre Eiffel', 'París')">
-                    <i class="fas fa-tower-observation"></i>
-                    <span>Torre Eiffel</span>
-                    <small>París</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('satellite')">
+                    <i class="fas fa-satellite"></i>
+                    <span>Satélites</span>
+                    <small>Tecnología espacial</small>
                 </button>
                 
-                <button class="place-btn" onclick="loadEarthImage(27.1751, 78.0421, 'Taj Mahal', 'India')">
-                    <i class="fas fa-mosque"></i>
-                    <span>Taj Mahal</span>
-                    <small>India</small>
+                <button class="place-btn" onclick="loadNASAImagesByCategory('telescope')">
+                    <i class="fas fa-telescope"></i>
+                    <span>Telescopios</span>
+                    <small>Observación astronómica</small>
                 </button>
             </div>
         </div>
@@ -329,29 +329,20 @@ async function loadEarthImagery() {
 }
 
 /**
- * Carga una imagen específica de la Tierra
- * @param {number} lat - Latitud
- * @param {number} lon - Longitud
- * @param {string} placeName - Nombre del lugar
- * @param {string} country - País
+ * Carga imágenes por categoría específica
+ * @param {string} category - Categoría de búsqueda
  */
-async function loadEarthImage(lat, lon, placeName, country) {
+async function loadNASAImagesByCategory(category) {
     showLoading('earth-loading');
     hideResults('earth-results');
 
     try {
-        const data = await makeRequest('/earth', {
-            lat: lat,
-            lon: lon
+        const data = await makeRequest('/images', {
+            q: category,
+            limit: 12
         });
         
-        // Verificar si hay error en la respuesta del backend
-        if (data.data && data.data.error) {
-            displayError('earth-results', `${data.data.error}: ${data.data.message}`);
-            return;
-        }
-        
-        displayEarthResults(data, placeName, country);
+        displayNASAImagesResults(data.data, category);
         showResults('earth-results');
     } catch (error) {
         displayError('earth-results', error.message);
@@ -361,82 +352,200 @@ async function loadEarthImage(lat, lon, placeName, country) {
 }
 
 /**
- * Muestra los resultados de imágenes de la Tierra
- * @param {Object} data - Datos de la imagen
- * @param {string} placeName - Nombre del lugar
- * @param {string} country - País
+ * Muestra los resultados de imágenes de la NASA
+ * @param {Object} data - Datos de la respuesta
+ * @param {string} category - Categoría buscada
  */
-function displayEarthResults(data, placeName, country) {
+function displayNASAImagesResults(data, category) {
     const container = document.getElementById('earth-results');
     
-    // Verificar si data es válido
-    if (!data || !data.data) {
+    if (!data || !data.collection || !data.collection.items || data.collection.items.length === 0) {
         container.innerHTML = `
             <div class="result-item">
-                <h3 class="result-title">Imagen de ${placeName}</h3>
+                <h3 class="result-title">Biblioteca de Imágenes de la NASA</h3>
                 <div class="error">
-                    ❌ No se pudieron obtener datos de la imagen de la Tierra
+                    ❌ No se encontraron imágenes para la categoría "${category}"
                 </div>
-                <p class="result-explanation">La API de imágenes de la Tierra puede estar temporalmente no disponible.</p>
-                <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
-                    <i class="fas fa-arrow-left"></i> Volver a lugares
+                <p class="result-explanation">Intenta con otra categoría o verifica la conexión.</p>
+                <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
+                    <i class="fas fa-arrow-left"></i> Volver a categorías
                 </button>
             </div>
         `;
         return;
     }
-    
-    const earthData = data.data;
-    
-    // Verificar si hay error en los datos
-    if (earthData.error) {
-        container.innerHTML = `
-            <div class="result-item">
-                <h3 class="result-title">Imagen de ${placeName}</h3>
-                <div class="error">
-                    ❌ ${earthData.error}: ${earthData.message || 'Error desconocido'}
-                </div>
-                ${earthData.suggestion ? `<p class="result-explanation">${earthData.suggestion}</p>` : ''}
-                <div class="info-message">
-                    <h4>💡 Información:</h4>
-                    <p>La API de imágenes de la Tierra de NASA está experimentando problemas técnicos. Esto es temporal y se resolverá pronto.</p>
-                </div>
-                <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
-                    <i class="fas fa-arrow-left"></i> Volver a lugares
-                </button>
-            </div>
-        `;
-        return;
-    }
-    
-    // Verificar si hay URL de imagen
-    if (!earthData.url) {
-        container.innerHTML = `
-            <div class="result-item">
-                <h3 class="result-title">Imagen de ${placeName}</h3>
-                <div class="error">
-                    ❌ No se encontró imagen para las coordenadas especificadas
-                </div>
-                <p class="result-explanation">Intenta con otras coordenadas o fecha.</p>
-                <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
-                    <i class="fas fa-arrow-left"></i> Volver a lugares
-                </button>
-            </div>
-        `;
-        return;
-    }
+
+    const items = data.collection.items;
+    const totalHits = data.collection.metadata?.total_hits || 0;
     
     container.innerHTML = `
         <div class="result-item">
-            <h3 class="result-title">Imagen de ${placeName}</h3>
-            <p class="result-explanation">Imagen satelital de ${placeName}, ${country}</p>
-            <img src="${earthData.url}" alt="${placeName} from Space" class="result-image">
-            <p style="color: var(--text-muted); font-size: 0.9rem;">
-                Fecha: ${earthData.date || 'No disponible'}
-                <br>Coordenadas: ${lat}, ${lon}
-            </p>
-            <button class="btn btn-secondary btn-back" onclick="loadEarthImagery()">
-                <i class="fas fa-arrow-left"></i> Ver otros lugares
+            <h3 class="result-title">Imágenes de ${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+            <p class="result-explanation">Se encontraron ${totalHits} resultados. Mostrando ${items.length} imágenes:</p>
+            
+            <div class="gallery">
+                ${items.map(item => {
+                    const nasaId = item.data?.[0]?.nasa_id;
+                    const title = item.data?.[0]?.title || 'Sin título';
+                    const description = item.data?.[0]?.description || 'Sin descripción';
+                    const dateCreated = item.data?.[0]?.date_created || 'Fecha no disponible';
+                    const mediaType = item.data?.[0]?.media_type || 'image';
+                    
+                    // Obtener la URL de la imagen (usar el primer enlace disponible)
+                    const links = item.links || [];
+                    const imageLink = links.find(link => link.render === 'image') || links[0];
+                    const imageUrl = imageLink?.href || '';
+                    
+                    return `
+                        <div class="gallery-item">
+                            ${imageUrl ? `<img src="${imageUrl}" alt="${title}" class="gallery-image" onerror="this.style.display='none'">` : ''}
+                            <div class="gallery-content">
+                                <h4 class="gallery-title">${title}</h4>
+                                <div class="gallery-date">${dateCreated}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem;">
+                                    ${mediaType === 'video' ? '🎥 Video' : '🖼️ Imagen'}
+                                </div>
+                                ${nasaId ? `<button class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="loadNASAAssetDetails('${nasaId}')">
+                                    <i class="fas fa-info-circle"></i> Ver detalles
+                                </button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            
+            <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
+                <i class="fas fa-arrow-left"></i> Ver otras categorías
+            </button>
+        </div>
+    `;
+}
+
+/**
+ * Carga detalles de un asset específico de la NASA
+ * @param {string} nasaId - ID del asset de la NASA
+ */
+async function loadNASAAssetDetails(nasaId) {
+    showLoading('earth-loading');
+    
+    try {
+        const data = await makeRequest(`/images/asset/${nasaId}`);
+        displayNASAAssetDetails(data.data, nasaId);
+    } catch (error) {
+        displayError('earth-results', error.message);
+    } finally {
+        hideLoading('earth-loading');
+    }
+}
+
+/**
+ * Muestra los detalles de un asset específico
+ * @param {Object} data - Datos del asset
+ * @param {string} nasaId - ID del asset
+ */
+function displayNASAAssetDetails(data, nasaId) {
+    const container = document.getElementById('earth-results');
+    
+    if (!data || !data.collection) {
+        container.innerHTML = `
+            <div class="result-item">
+                <h3 class="result-title">Detalles del Asset</h3>
+                <div class="error">
+                    ❌ No se pudieron obtener los detalles del asset
+                </div>
+                <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
+                    <i class="fas fa-arrow-left"></i> Volver a categorías
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    const items = data.collection.items || [];
+    const asset = items[0];
+    
+    if (!asset) {
+        container.innerHTML = `
+            <div class="result-item">
+                <h3 class="result-title">Detalles del Asset</h3>
+                <div class="error">
+                    ❌ Asset no encontrado
+                </div>
+                <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
+                    <i class="fas fa-arrow-left"></i> Volver a categorías
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    const title = asset.data?.[0]?.title || 'Sin título';
+    const description = asset.data?.[0]?.description || 'Sin descripción';
+    const dateCreated = asset.data?.[0]?.date_created || 'Fecha no disponible';
+    const keywords = asset.data?.[0]?.keywords || [];
+    const mediaType = asset.data?.[0]?.media_type || 'image';
+    
+    // Obtener enlaces de diferentes tamaños
+    const links = asset.links || [];
+    const imageLinks = links.filter(link => link.render === 'image');
+    const videoLinks = links.filter(link => link.render === 'video');
+    
+    container.innerHTML = `
+        <div class="result-item">
+            <h3 class="result-title">${title}</h3>
+            <div class="result-date">${dateCreated}</div>
+            <p class="result-explanation">${description}</p>
+            
+            ${imageLinks.length > 0 ? `
+                <div style="margin: 1rem 0;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Imágenes disponibles:</h4>
+                    <div class="gallery">
+                        ${imageLinks.slice(0, 3).map(link => `
+                            <div class="gallery-item">
+                                <img src="${link.href}" alt="${title}" class="gallery-image">
+                                <div class="gallery-content">
+                                    <div class="gallery-title">${link.rel || 'Imagen'}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${videoLinks.length > 0 ? `
+                <div style="margin: 1rem 0;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Videos disponibles:</h4>
+                    <div class="gallery">
+                        ${videoLinks.slice(0, 2).map(link => `
+                            <div class="gallery-item">
+                                <video controls class="gallery-image">
+                                    <source src="${link.href}" type="video/mp4">
+                                    Tu navegador no soporta videos.
+                                </video>
+                                <div class="gallery-content">
+                                    <div class="gallery-title">${link.rel || 'Video'}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${keywords.length > 0 ? `
+                <div style="margin: 1rem 0;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Palabras clave:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${keywords.slice(0, 10).map(keyword => `
+                            <span style="background: rgba(0, 212, 255, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                                ${keyword}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <button class="btn btn-secondary btn-back" onclick="loadNASAImages()">
+                <i class="fas fa-arrow-left"></i> Volver a categorías
             </button>
         </div>
     `;
@@ -791,8 +900,9 @@ function initApp() {
 window.loadAPOD = loadAPOD;
 window.loadMultipleAPOD = loadMultipleAPOD;
 window.loadAsteroids = loadAsteroids;
-window.loadEarthImagery = loadEarthImagery;
-window.loadEarthImage = loadEarthImage;
+window.loadNASAImages = loadNASAImages;
+window.loadNASAImagesByCategory = loadNASAImagesByCategory;
+window.loadNASAAssetDetails = loadNASAAssetDetails;
 window.loadMarsWeather = loadMarsWeather;
 window.loadEPICImages = loadEPICImages;
 window.loadRoverPhotos = loadRoverPhotos;

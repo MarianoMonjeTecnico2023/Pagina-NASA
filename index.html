@@ -20,10 +20,11 @@
                 <ul class="nav-menu">
                     <li><a href="#apod" class="nav-link">APOD</a></li>
                     <li><a href="#asteroids" class="nav-link">Asteroides</a></li>
-                    <li><a href="#earth" class="nav-link">Tierra</a></li>
+                    <li><a href="#earth" class="nav-link">Biblioteca</a></li>
                     <li><a href="#mars" class="nav-link">Marte</a></li>
                     <li><a href="#gallery" class="nav-link">Galería</a></li>
                     <li><a href="#stats" class="nav-link">Estadísticas</a></li>
+                </ul>
             </nav>
         </div>
     </header>
@@ -95,19 +96,19 @@
             <!-- Earth Section -->
             <section id="earth" class="card">
                 <div class="card-header">
-                    <i class="fas fa-globe-americas card-icon"></i>
-                    <h2 class="card-title">Imágenes de la Tierra</h2>
+                    <i class="fas fa-images card-icon"></i>
+                    <h2 class="card-title">Biblioteca de Imágenes y Videos</h2>
                 </div>
-                <p class="card-description">Vistas satelitales de la Tierra desde el espacio.</p>
-                <button class="btn" onclick="loadEarthImagery()">
-                    <i class="fas fa-satellite-dish"></i>
-                    Ver Tierra
+                <p class="card-description">Explora la colección de imágenes y videos de la NASA Image and Video Library.</p>
+                <button class="btn" onclick="loadNASAImages()">
+                    <i class="fas fa-search"></i>
+                    Explorar Biblioteca
                 </button>
                 
                 <!-- Loading -->
                 <div id="earth-loading" class="loading">
                     <div class="spinner"></div>
-                    <p>Obteniendo imagen de la Tierra...</p>
+                    <p>Buscando en la biblioteca de la NASA...</p>
                 </div>
                 
                 <!-- Results -->
