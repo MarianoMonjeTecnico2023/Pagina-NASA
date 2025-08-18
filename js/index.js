@@ -275,7 +275,7 @@ async function performNASASearch() {
     
     try {
         const data = await makeRequest('/images', { q: query, limit: 15 });
-        displayNASAImagesResults(data.data, query);
+        await displayNASAImagesResults(data.data, query);
         showResults('nasa-images-results');
     } catch (error) {
         displayError('nasa-images-results', error.message);
@@ -299,7 +299,7 @@ function quickSearch(term) {
  * @param {Object} data - Datos de la búsqueda
  * @param {string} query - Término buscado
  */
-function displayNASAImagesResults(data, query) {
+async function displayNASAImagesResults(data, query) {
     const container = document.getElementById('nasa-images-results');
     
     if (!data || !data.collection || !data.collection.items) {
@@ -369,7 +369,18 @@ function displayNASAImagesResults(data, query) {
     // Mostrar galería de resultados
     content += '<div class="gallery">';
     
-    sortedItems.forEach(item => {
+    // Agregar indicador de progreso para videos
+    const videoItems = sortedItems.filter(item => item.data?.[0]?.media_type === 'video');
+    if (videoItems.length > 0) {
+        content += `
+            <div style="margin-bottom: 1rem; padding: 0.5rem; background: rgba(255, 107, 107, 0.1); border-radius: 8px; font-size: 0.9rem; color: var(--text-secondary);">
+                <i class="fas fa-spinner fa-spin"></i> Cargando ${videoItems.length} video(s)... Esto puede tomar unos segundos.
+            </div>
+        `;
+    }
+    
+    // Procesar items de forma asíncrona para obtener URLs de video
+    for (const item of sortedItems) {
         const metadata = item.data?.[0];
         const nasaId = metadata?.nasa_id;
         const title = metadata?.title || 'Sin título';
@@ -381,6 +392,35 @@ function displayNASAImagesResults(data, query) {
         const imageUrl = item.links?.find(link => link.render === 'image')?.href || 
                         item.links?.find(link => link.rel === 'preview')?.href ||
                         'https://via.placeholder.com/300x200?text=Sin+imagen';
+        
+        // Para videos, obtener la URL correcta del video
+        let videoUrl = null;
+        if (mediaType === 'video') {
+            // Para videos, necesitamos obtener la URL real del asset
+            try {
+                const assetResponse = await makeRequest(`/images/asset/${nasaId}`);
+                if (assetResponse.data?.collection?.items?.[0]?.href) {
+                    // Seleccionar la mejor calidad de video disponible
+                    const videoUrls = assetResponse.data.collection.items
+                        .map(item => item.href)
+                        .filter(url => url.includes('.mp4'))
+                        .sort((a, b) => {
+                            // Priorizar calidad: orig > large > medium > mobile > preview > small
+                            const qualityOrder = ['orig', 'large', 'medium', 'mobile', 'preview', 'small'];
+                            const aQuality = qualityOrder.find(q => a.includes(`~${q}.mp4`)) || 'unknown';
+                            const bQuality = qualityOrder.find(q => b.includes(`~${q}.mp4`)) || 'unknown';
+                            return qualityOrder.indexOf(aQuality) - qualityOrder.indexOf(bQuality);
+                        });
+                    
+                    videoUrl = videoUrls[0] || assetResponse.data.collection.items[0].href;
+                } else {
+                    videoUrl = imageUrl; // Fallback a la imagen si no hay video
+                }
+            } catch (error) {
+                console.warn('⚠️ No se pudo obtener la URL del video:', error);
+                videoUrl = imageUrl; // Fallback a la imagen
+            }
+        }
         
         // Determinar icono y color según el tipo de media
         let mediaIcon, mediaColor, mediaLabel;
@@ -407,9 +447,10 @@ function displayNASAImagesResults(data, query) {
                     <i class="${mediaIcon}"></i> ${mediaLabel}
                 </div>
                 ${mediaType === 'video' ? `
-                    <video class="gallery-image" style="object-fit: cover; height: 200px;" muted loop>
-                        <source src="${imageUrl}" type="video/mp4">
-                        <img src="${imageUrl}" alt="${title}" class="gallery-image">
+                    <video class="gallery-image" style="object-fit: cover; height: 200px; width: 100%;" controls preload="metadata">
+                        <source src="${videoUrl}" type="video/mp4">
+                        <source src="${videoUrl}" type="video/webm">
+                        <img src="${imageUrl}" alt="${title}" class="gallery-image" style="object-fit: cover; height: 200px; width: 100%;">
                     </video>
                 ` : `
                     <img src="${imageUrl}" alt="${title}" class="gallery-image">
@@ -426,7 +467,7 @@ function displayNASAImagesResults(data, query) {
                 </div>
             </div>
         `;
-    });
+    }
     
     content += '</div>';
     
@@ -526,6 +567,21 @@ function displayNASAAssetDetails(data, nasaId) {
     // Mostrar enlaces de video/imagen
     if (data.collection?.items?.[0]?.href) {
         const href = data.collection.items[0].href;
+        
+        // Para videos, buscar la URL correcta del video
+        let videoUrl = href;
+        if (data.collection?.items?.[0]?.links) {
+            const videoLink = data.collection.items[0].links.find(link => 
+                link.render === 'video' || 
+                link.rel === 'video' || 
+                link.href?.includes('.mp4') || 
+                link.href?.includes('.mov')
+            );
+            if (videoLink) {
+                videoUrl = videoLink.href;
+            }
+        }
+        
         content += `
             <div style="margin: 1rem 0;">
                 <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Enlaces de Descarga:</h4>
@@ -534,11 +590,11 @@ function displayNASAAssetDetails(data, nasaId) {
         
         // Agregar enlaces para diferentes formatos
         const formats = [
-            { name: 'Original', url: href },
-            { name: 'MP4', url: href.replace(/\.\w+$/, '.mp4') },
-            { name: 'MOV', url: href.replace(/\.\w+$/, '.mov') },
-            { name: 'JPG', url: href.replace(/\.\w+$/, '.jpg') },
-            { name: 'PNG', url: href.replace(/\.\w+$/, '.png') }
+            { name: 'Original', url: videoUrl },
+            { name: 'MP4', url: videoUrl.replace(/\.\w+$/, '.mp4') },
+            { name: 'MOV', url: videoUrl.replace(/\.\w+$/, '.mov') },
+            { name: 'JPG', url: videoUrl.replace(/\.\w+$/, '.jpg') },
+            { name: 'PNG', url: videoUrl.replace(/\.\w+$/, '.png') }
         ];
         
         formats.forEach(format => {
@@ -561,10 +617,16 @@ function displayNASAAssetDetails(data, nasaId) {
             content += `
                 <div style="margin: 1rem 0;">
                     <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">Reproductor de Video:</h4>
-                    <video controls style="width: 100%; max-width: 500px; border-radius: 8px;">
-                        <source src="${href}" type="video/mp4">
+                    <video controls style="width: 100%; max-width: 500px; border-radius: 8px;" preload="metadata">
+                        <source src="${videoUrl}" type="video/mp4">
+                        <source src="${videoUrl}" type="video/webm">
+                        <source src="${videoUrl}" type="video/ogg">
                         Tu navegador no soporta el elemento de video.
+                        <br><a href="${videoUrl}" target="_blank" style="color: var(--accent-color);">Haz clic aquí para descargar el video</a>
                     </video>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem;">
+                        <i class="fas fa-info-circle"></i> Si el video no se reproduce, haz clic en el enlace de descarga arriba.
+                    </p>
                 </div>
             `;
         } else if (metadata?.media_type === 'image') {
