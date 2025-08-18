@@ -70,7 +70,7 @@ function displaySuccess(containerId, message) {
  */
 async function makeRequest(endpoint, params = {}) {
     try {
-        const url = new URL(`${API_BASE}${endpoint}`);
+        const url = new URL(`${API_BASE_URL}${endpoint}`);
         Object.keys(params).forEach(key => {
             if (params[key] !== null && params[key] !== '') {
                 url.searchParams.append(key, params[key]);
