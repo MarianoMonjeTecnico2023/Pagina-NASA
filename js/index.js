@@ -422,14 +422,14 @@ function displayNASAImagesResults(data, category) {
 }
 
 /**
- * Carga detalles de un asset específico de la NASA
+ * Carga captions de un asset específico de la NASA
  * @param {string} nasaId - ID del asset de la NASA
  */
 async function loadNASAAssetDetails(nasaId) {
     showLoading('earth-loading');
     
     try {
-        const data = await makeRequest(`/images/asset/${nasaId}`);
+        const data = await makeRequest(`/images/captions/${nasaId}`);
         displayNASAAssetDetails(data.data, nasaId);
     } catch (error) {
         displayError('earth-results', error.message);
@@ -599,44 +599,24 @@ function displayMarsResults(data) {
         return;
     }
     
-    // Manejar diferentes estructuras de datos
-    let weatherData = data;
-    
-    // Si data es un array, tomar el último elemento
-    if (Array.isArray(data)) {
-        if (data.length === 0) {
-            container.innerHTML = `
-                <div class="result-item">
-                    <h3 class="result-title">Clima en Marte</h3>
-                    <div class="error">
-                        ❌ No hay datos recientes del clima marciano
-                    </div>
-                    <p class="result-explanation">No se encontraron datos recientes del rover InSight.</p>
+    // Verificar si hay sol_keys (días marcianos disponibles)
+    if (!data.sol_keys || data.sol_keys.length === 0) {
+        container.innerHTML = `
+            <div class="result-item">
+                <h3 class="result-title">Clima en Marte</h3>
+                <div class="error">
+                    ❌ No hay datos recientes del clima marciano
                 </div>
-            `;
-            return;
-        }
-        weatherData = data[data.length - 1];
+                <p class="result-explanation">No se encontraron datos recientes del rover InSight.</p>
+            </div>
+        `;
+        return;
     }
     
-    // Si data es un objeto con una propiedad que contiene el array
-    if (data.data && Array.isArray(data.data)) {
-        if (data.data.length === 0) {
-            container.innerHTML = `
-                <div class="result-item">
-                    <h3 class="result-title">Clima en Marte</h3>
-                    <div class="error">
-                        ❌ No hay datos recientes del clima marciano
-                    </div>
-                    <p class="result-explanation">No se encontraron datos recientes del rover InSight.</p>
-                </div>
-            `;
-            return;
-        }
-        weatherData = data.data[data.data.length - 1];
-    }
+    // Obtener el sol (día marciano) más reciente
+    const latestSol = data.sol_keys[data.sol_keys.length - 1];
+    const weatherData = data[latestSol];
     
-    // Verificar si weatherData es válido
     if (!weatherData) {
         container.innerHTML = `
             <div class="result-item">
@@ -651,10 +631,10 @@ function displayMarsResults(data) {
     }
     
     // Extraer datos de manera segura
-    const temperature = weatherData.AT?.av || weatherData.AT?.mn || weatherData.AT || 'N/A';
-    const windSpeed = weatherData.HWS?.av || weatherData.HWS?.mn || weatherData.HWS || 'N/A';
-    const pressure = weatherData.PRE?.av || weatherData.PRE?.mn || weatherData.PRE || 'N/A';
-    const sol = weatherData.sol || 'N/A';
+    const temperature = weatherData.AT?.av || 'N/A';
+    const windSpeed = weatherData.HWS?.av || 'N/A';
+    const pressure = weatherData.PRE?.av || 'N/A';
+    const sol = latestSol || 'N/A';
     
     container.innerHTML = `
         <div class="result-item">
