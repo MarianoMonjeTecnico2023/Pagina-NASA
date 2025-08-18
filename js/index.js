@@ -5,6 +5,7 @@
 
 // ===== CONFIGURACIÓN =====
 const API_BASE_URL = 'https://server-nasa.onrender.com/api/nasa';
+let currentAPODLanguage = 'spanish'; // Variable global para controlar el idioma
 
 // ===== FUNCIONES UTILITARIAS =====
 
@@ -129,6 +130,17 @@ async function loadMultipleAPOD() {
 }
 
 /**
+ * Alterna entre idioma español e inglés para APOD
+ */
+function toggleAPODLanguage() {
+    // Cambiar el idioma actual
+    currentAPODLanguage = currentAPODLanguage === 'spanish' ? 'english' : 'spanish';
+    
+    // Recargar la imagen del día con el nuevo idioma
+    loadAPOD();
+}
+
+/**
  * Muestra el resultado de una imagen APOD
  * @param {Object} apod - Datos de la imagen APOD
  */
@@ -138,18 +150,19 @@ function displayAPODResult(apod) {
         ? `<video class="result-video" controls><source src="${apod.url}" type="video/mp4"></video>`
         : `<img src="${apod.url}" alt="${apod.title}" class="result-image">`;
 
-    // Determinar qué idioma mostrar
-    const showSpanish = apod.explanation_es && apod.title_es;
+    // Determinar qué idioma mostrar basado en el estado global
+    const showSpanish = currentAPODLanguage === 'spanish' && apod.explanation_es && apod.title_es;
     const title = showSpanish ? apod.title_es : apod.title;
     const explanation = showSpanish ? apod.explanation_es : apod.explanation;
+    const buttonText = showSpanish ? 'Ver en Inglés' : 'Ver en Español';
 
     container.innerHTML = `
         <div class="result-item">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h3 class="result-title">${title}</h3>
-                ${showSpanish ? `
+                ${apod.explanation_es && apod.title_es ? `
                     <button onclick="toggleAPODLanguage()" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">
-                        <i class="fas fa-language"></i> ${showSpanish ? 'Ver en Inglés' : 'Ver en Español'}
+                        <i class="fas fa-language"></i> ${buttonText}
                     </button>
                 ` : ''}
             </div>
@@ -159,15 +172,6 @@ function displayAPODResult(apod) {
             ${apod.copyright ? `<p style="color: var(--text-muted); font-size: 0.9rem;">© ${apod.copyright}</p>` : ''}
         </div>
     `;
-}
-
-/**
- * Alterna entre idioma español e inglés para APOD
- */
-function toggleAPODLanguage() {
-    // Esta función se ejecutará cuando el usuario haga clic en el botón
-    // Recargamos la imagen del día para alternar el idioma
-    loadAPOD();
 }
 
 /**
@@ -314,6 +318,10 @@ function displayEarthResults(data) {
                     ❌ ${earthData.error}: ${earthData.message || 'Error desconocido'}
                 </div>
                 ${earthData.suggestion ? `<p class="result-explanation">${earthData.suggestion}</p>` : ''}
+                <div style="background: rgba(0, 212, 255, 0.1); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--accent-color);">💡 Información:</h4>
+                    <p style="margin: 0; font-size: 0.9rem;">La API de imágenes de la Tierra de NASA está experimentando problemas técnicos. Esto es temporal y se resolverá pronto.</p>
+                </div>
             </div>
         `;
         return;
@@ -380,8 +388,8 @@ async function loadMarsWeather() {
 function displayMarsResults(data) {
     const container = document.getElementById('mars-results');
     
-    // Verificar si data es válido y tiene elementos
-    if (!data || !Array.isArray(data) || data.length === 0) {
+    // Verificar si data es válido
+    if (!data) {
         container.innerHTML = `
             <div class="result-item">
                 <h3 class="result-title">Clima en Marte</h3>
@@ -394,10 +402,45 @@ function displayMarsResults(data) {
         return;
     }
     
-    const latest = data[data.length - 1];
+    // Manejar diferentes estructuras de datos
+    let weatherData = data;
     
-    // Verificar si latest es válido
-    if (!latest) {
+    // Si data es un array, tomar el último elemento
+    if (Array.isArray(data)) {
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="result-item">
+                    <h3 class="result-title">Clima en Marte</h3>
+                    <div class="error">
+                        ❌ No hay datos recientes del clima marciano
+                    </div>
+                    <p class="result-explanation">No se encontraron datos recientes del rover InSight.</p>
+                </div>
+            `;
+            return;
+        }
+        weatherData = data[data.length - 1];
+    }
+    
+    // Si data es un objeto con una propiedad que contiene el array
+    if (data.data && Array.isArray(data.data)) {
+        if (data.data.length === 0) {
+            container.innerHTML = `
+                <div class="result-item">
+                    <h3 class="result-title">Clima en Marte</h3>
+                    <div class="error">
+                        ❌ No hay datos recientes del clima marciano
+                    </div>
+                    <p class="result-explanation">No se encontraron datos recientes del rover InSight.</p>
+                </div>
+            `;
+            return;
+        }
+        weatherData = data.data[data.data.length - 1];
+    }
+    
+    // Verificar si weatherData es válido
+    if (!weatherData) {
         container.innerHTML = `
             <div class="result-item">
                 <h3 class="result-title">Clima en Marte</h3>
@@ -411,10 +454,10 @@ function displayMarsResults(data) {
     }
     
     // Extraer datos de manera segura
-    const temperature = latest.AT?.av || latest.AT?.mn || 'N/A';
-    const windSpeed = latest.HWS?.av || latest.HWS?.mn || 'N/A';
-    const pressure = latest.PRE?.av || latest.PRE?.mn || 'N/A';
-    const sol = latest.sol || 'N/A';
+    const temperature = weatherData.AT?.av || weatherData.AT?.mn || weatherData.AT || 'N/A';
+    const windSpeed = weatherData.HWS?.av || weatherData.HWS?.mn || weatherData.HWS || 'N/A';
+    const pressure = weatherData.PRE?.av || weatherData.PRE?.mn || weatherData.PRE || 'N/A';
+    const sol = weatherData.sol || 'N/A';
     
     container.innerHTML = `
         <div class="result-item">
@@ -434,7 +477,7 @@ function displayMarsResults(data) {
                 </div>
             </div>
             <p class="result-explanation">Datos del rover InSight en Marte - Sol ${sol}</p>
-            ${latest.First_UTC ? `<p style="color: var(--text-muted); font-size: 0.9rem;">Última actualización: ${latest.First_UTC}</p>` : ''}
+            ${weatherData.First_UTC ? `<p style="color: var(--text-muted); font-size: 0.9rem;">Última actualización: ${weatherData.First_UTC}</p>` : ''}
         </div>
     `;
 }
