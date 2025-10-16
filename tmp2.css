@@ -1,0 +1,200 @@
+    font-size: 0.7rem;
+    font-weight: bold;
+    z-index: 10;
+    color: white;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.media-type-badge.video {
+    background: #ff6b6b;
+}
+
+.media-type-badge.image {
+    background: #00d4ff;
+}
+
+.media-type-badge.audio {
+    background: #ffc107;
+}
+
+/* Contador de tipos de media */
+.media-counter {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+}
+
+.media-counter span {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.media-counter .video-count {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.media-counter .image-count {
+    background: rgba(0, 212, 255, 0.1);
+    color: #00d4ff;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.media-counter .audio-count {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+/* Estilos para el reproductor de video en detalles */
+.video-player-container {
+    margin: 1rem 0;
+}
+
+.video-player-container video {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.video-player-container .video-info {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 212, 255, 0.05);
+    border-radius: 4px;
+}
+
+/* Enlaces de descarga */
+.download-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.download-links a {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.download-links a:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+/* Priorización de videos */
+.video-priority {
+    border: 2px solid #ff6b6b !important;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+/* Animaciones para elementos de video */
+.gallery-item.video-item {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para el modal de detalles */
+.asset-details-modal {
+    margin-top: 2rem;
+    border: 2px solid var(--accent-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(0, 212, 255, 0.05);
+    backdrop-filter: blur(10px);
+}
+
+.asset-details-modal .close-button {
+    float: right;
+    margin-top: -2rem;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+}
+
+.asset-details-modal .close-button:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    #nasa-search-input {
+        min-width: 200px;
+        font-size: 0.9rem;
+    }
+    
+    .media-counter {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .download-links {
+        flex-direction: column;
+    }
+    
+    .gallery-item video {
+        height: 150px;
+    }
+    
+    .video-player-container video {
+        max-width: 100%;
+    }
+}
+
+/* Estados de carga mejorados */
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.loading-state i {
+    margin-right: 0.5rem;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Mejoras para accesibilidad */
+.gallery-item video:focus,
+#nasa-search-input:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Estilos para mensajes de error específicos de video */
+.video-error {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
