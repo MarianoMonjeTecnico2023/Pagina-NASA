@@ -816,43 +816,98 @@ function displayEPICResults(epicData) {
     `;
 }
 
-// ===== FUNCIONES ROVER =====
+// ===== FUNCIONES EXOPLANETAS =====
 
 /**
- * Carga fotos de rovers de Marte
+ * Carga exoplanetas desde NASA Exoplanet Archive
  */
-async function loadRoverPhotos() {
-    showLoading('rover-loading');
-    hideResults('rover-results');
+async function loadExoplanets() {
+    showLoading('exoplanets-loading');
+    hideResults('exoplanets-results');
 
     try {
-        const data = await makeRequest('/rover', {
-            rover: 'curiosity',
-            sol: 1000
+        const searchInput = document.getElementById('exoplanet-search-input');
+        const search = searchInput ? searchInput.value.trim() : '';
+        const data = await makeRequest('/exoplanets', {
+            search,
+            limit: 12
         });
-        displayRoverResults(data.data);
-        showResults('rover-results');
+        displayExoplanetsResults(data.data);
+        showResults('exoplanets-results');
     } catch (error) {
-        displayError('rover-results', error.message);
+        displayError('exoplanets-results', error.message);
     } finally {
-        hideLoading('rover-loading');
+        hideLoading('exoplanets-loading');
     }
 }
 
 /**
- * Muestra los resultados de fotos de rovers
- * @param {Object} data - Datos de fotos de rovers
+ * Búsqueda rápida de exoplanetas
  */
-function displayRoverResults(data) {
-    const container = document.getElementById('rover-results');
+function quickExoplanetSearch(term) {
+    const input = document.getElementById('exoplanet-search-input');
+    if (input) input.value = term;
+    loadExoplanets();
+}
+
+/**
+ * Formatea valores numéricos con unidad
+ */
+function formatExoplanetValue(value, unit = '', decimals = 2) {
+    if (value === null || value === undefined || value === '') return 'Sin datos';
+    const number = Number(value);
+    if (Number.isNaN(number)) return value;
+    return `${number.toFixed(decimals)} ${unit}`.trim();
+}
+
+/**
+ * Muestra los resultados de exoplanetas
+ * @param {Array} planets - Lista de exoplanetas
+ */
+function displayExoplanetsResults(planets) {
+    const container = document.getElementById('exoplanets-results');
+
+    if (!Array.isArray(planets) || planets.length === 0) {
+        container.innerHTML = `
+            <div class="result-item">
+                <h3 class="result-title">No se encontraron exoplanetas</h3>
+                <p class="result-explanation">Probá con búsquedas como Kepler, TRAPPIST o Proxima.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const withDistance = planets.filter(planet => planet.sy_dist !== null && planet.sy_dist !== undefined);
+    const nearest = withDistance.length
+        ? withDistance.reduce((min, planet) => Number(planet.sy_dist) < Number(min.sy_dist) ? planet : min, withDistance[0])
+        : null;
+
     container.innerHTML = `
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value">${planets.length}</div>
+                <div class="stat-label">Resultados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">${nearest ? nearest.pl_name : 'N/D'}</div>
+                <div class="stat-label">Más cercano</div>
+            </div>
+        </div>
         <div class="gallery">
-            ${data.photos.slice(0, 6).map(photo => `
+            ${planets.map(planet => `
                 <div class="gallery-item">
-                    <img src="${photo.img_src}" alt="Rover ${photo.rover.name}" class="gallery-image">
                     <div class="gallery-content">
-                        <h4 class="gallery-title">${photo.rover.name}</h4>
-                        <div class="gallery-date">Sol ${photo.sol} - ${photo.camera.name}</div>
+                        <h4 class="gallery-title">🪐 ${planet.pl_name || 'Exoplaneta sin nombre'}</h4>
+                        <div class="gallery-date">⭐ Estrella: ${planet.hostname || 'Sin datos'}</div>
+                        <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6;">
+                            <strong>Método:</strong> ${planet.discoverymethod || 'Sin datos'}<br>
+                            <strong>Año:</strong> ${planet.disc_year || 'Sin datos'}<br>
+                            <strong>Distancia:</strong> ${formatExoplanetValue(planet.sy_dist, 'pc')}<br>
+                            <strong>Radio:</strong> ${formatExoplanetValue(planet.pl_rade, 'R⊕')}<br>
+                            <strong>Masa:</strong> ${formatExoplanetValue(planet.pl_bmasse, 'M⊕')}<br>
+                            <strong>Período orbital:</strong> ${formatExoplanetValue(planet.pl_orbper, 'días')}<br>
+                            <strong>Temperatura:</strong> ${formatExoplanetValue(planet.pl_eqt, 'K', 0)}
+                        </p>
                     </div>
                 </div>
             `).join('')}
@@ -960,7 +1015,7 @@ async function loadAllData() {
         loadAsteroids(),
         loadMarsWeather(),
         loadEPICImages(),
-        loadRoverPhotos()
+        loadExoplanets()
     ]);
 }
 
@@ -1001,7 +1056,8 @@ window.clearSearch = clearSearch;
 window.loadNASAAssetDetails = loadNASAAssetDetails;
 window.loadMarsWeather = loadMarsWeather;
 window.loadEPICImages = loadEPICImages;
-window.loadRoverPhotos = loadRoverPhotos;
+window.loadExoplanets = loadExoplanets;
+window.quickExoplanetSearch = quickExoplanetSearch;
 window.loadGallery = loadGallery;
 window.loadStats = loadStats;
 window.loadAllData = loadAllData;
